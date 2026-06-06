@@ -1350,11 +1350,17 @@ fn run_app_internal(
                                 navigate_stacked_commit(&mut state, new_index, &options, backend);
                             }
                         }
-                        KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        KeyCode::Char('d')
+                            if key.modifiers.contains(KeyModifiers::CONTROL)
+                                || key.modifiers.is_empty() =>
+                        {
                             let half_screen = (visible_height / 2) as u16;
                             state.scroll = (state.scroll + half_screen).min(max_scroll as u16);
                         }
-                        KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        KeyCode::Char('u')
+                            if key.modifiers.contains(KeyModifiers::CONTROL)
+                                || key.modifiers.is_empty() =>
+                        {
                             let half_screen = (visible_height / 2) as u16;
                             state.scroll = state.scroll.saturating_sub(half_screen);
                         }
@@ -2052,7 +2058,7 @@ fn run_app_internal(
                                                 description: "Next / previous file",
                                             },
                                             KeyBind {
-                                                key: "ctrl+d / ctrl+u",
+                                                key: "d / u (or ctrl+d / ctrl+u)",
                                                 description: "Scroll half page down / up",
                                             },
                                             KeyBind {
