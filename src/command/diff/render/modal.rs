@@ -9,6 +9,7 @@ use crate::command::diff::render::diff_view::expand_tabs_in_spans;
 use crate::command::diff::search::MatchPanel;
 use crate::command::diff::state::Annotation;
 use crate::command::diff::theme;
+use crate::command::diff::types::{SCROLL_STEP_COLUMNS, SCROLL_STEP_LINES};
 
 #[derive(Clone)]
 pub struct KeyBind {
@@ -918,11 +919,11 @@ impl Modal {
 
                 match mouse.kind {
                     MouseEventKind::ScrollDown => {
-                        *scroll = (*scroll + 3).min(max_scroll);
+                        *scroll = (*scroll + SCROLL_STEP_LINES as u16).min(max_scroll);
                         true
                     }
                     MouseEventKind::ScrollUp => {
-                        *scroll = scroll.saturating_sub(3);
+                        *scroll = scroll.saturating_sub(SCROLL_STEP_LINES as u16);
                         true
                     }
                     _ => false,
@@ -967,46 +968,46 @@ impl Modal {
                     MouseEventKind::ScrollDown => {
                         if in_left {
                             if horizontal {
-                                state.scroll_list_x(4);
+                                state.scroll_list_x(SCROLL_STEP_COLUMNS);
                             } else {
                                 // Scroll the list view; selection stays put
                                 // (and may scroll off-screen — by design).
-                                state.scroll_list_y(3, visible_rows);
+                                state.scroll_list_y(SCROLL_STEP_LINES, visible_rows);
                             }
                         } else if horizontal {
-                            state.scroll_preview_x(4);
+                            state.scroll_preview_x(SCROLL_STEP_COLUMNS);
                         } else {
-                            state.scroll_preview_y(3);
+                            state.scroll_preview_y(SCROLL_STEP_LINES);
                         }
                         true
                     }
                     MouseEventKind::ScrollUp => {
                         if in_left {
                             if horizontal {
-                                state.scroll_list_x(-4);
+                                state.scroll_list_x(-SCROLL_STEP_COLUMNS);
                             } else {
-                                state.scroll_list_y(-3, visible_rows);
+                                state.scroll_list_y(-SCROLL_STEP_LINES, visible_rows);
                             }
                         } else if horizontal {
-                            state.scroll_preview_x(-4);
+                            state.scroll_preview_x(-SCROLL_STEP_COLUMNS);
                         } else {
-                            state.scroll_preview_y(-3);
+                            state.scroll_preview_y(-SCROLL_STEP_LINES);
                         }
                         true
                     }
                     MouseEventKind::ScrollLeft => {
                         if in_left {
-                            state.scroll_list_x(-4);
+                            state.scroll_list_x(-SCROLL_STEP_COLUMNS);
                         } else {
-                            state.scroll_preview_x(-4);
+                            state.scroll_preview_x(-SCROLL_STEP_COLUMNS);
                         }
                         true
                     }
                     MouseEventKind::ScrollRight => {
                         if in_left {
-                            state.scroll_list_x(4);
+                            state.scroll_list_x(SCROLL_STEP_COLUMNS);
                         } else {
-                            state.scroll_preview_x(4);
+                            state.scroll_preview_x(SCROLL_STEP_COLUMNS);
                         }
                         true
                     }

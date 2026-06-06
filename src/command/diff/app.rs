@@ -49,7 +49,7 @@ use super::state::{adjust_scroll_for_hunk, adjust_scroll_to_line, AppState, Pend
 use super::theme;
 use super::types::{
     ChangeType, CursorPosition, DiffFullscreen, DiffPanelFocus, FileStatus, FocusedPanel,
-    SelectionMode, SidebarItem,
+    SelectionMode, SidebarItem, SCROLL_STEP_COLUMNS, SCROLL_STEP_LINES,
 };
 use super::watcher::{setup_watcher, WatchEvent};
 use super::{
@@ -1122,8 +1122,8 @@ fn run_app_internal(
                             // Coalesce consecutive scroll events to handle fast scrolling.
                             // Non-scroll events are preserved in pending_events queue.
                             let mut scroll_delta: i32 = match mouse.kind {
-                                MouseEventKind::ScrollDown => 3,
-                                MouseEventKind::ScrollUp => -3,
+                                MouseEventKind::ScrollDown => SCROLL_STEP_LINES,
+                                MouseEventKind::ScrollUp => -SCROLL_STEP_LINES,
                                 _ => 0,
                             };
 
@@ -1132,8 +1132,12 @@ fn run_app_internal(
                                 let next_event = event::read()?;
                                 match &next_event {
                                     Event::Mouse(m) => match m.kind {
-                                        MouseEventKind::ScrollDown => scroll_delta += 3,
-                                        MouseEventKind::ScrollUp => scroll_delta -= 3,
+                                        MouseEventKind::ScrollDown => {
+                                            scroll_delta += SCROLL_STEP_LINES
+                                        }
+                                        MouseEventKind::ScrollUp => {
+                                            scroll_delta -= SCROLL_STEP_LINES
+                                        }
                                         _ => {
                                             // Non-scroll mouse event - queue for processing
                                             pending_events.push_back(next_event);
@@ -1180,8 +1184,8 @@ fn run_app_internal(
                         MouseEventKind::ScrollLeft | MouseEventKind::ScrollRight => {
                             // Coalesce consecutive horizontal scroll events
                             let mut h_scroll_delta: i32 = match mouse.kind {
-                                MouseEventKind::ScrollRight => 4,
-                                MouseEventKind::ScrollLeft => -4,
+                                MouseEventKind::ScrollRight => SCROLL_STEP_COLUMNS,
+                                MouseEventKind::ScrollLeft => -SCROLL_STEP_COLUMNS,
                                 _ => 0,
                             };
 
@@ -1190,8 +1194,12 @@ fn run_app_internal(
                                 let next_event = event::read()?;
                                 match &next_event {
                                     Event::Mouse(m) => match m.kind {
-                                        MouseEventKind::ScrollRight => h_scroll_delta += 4,
-                                        MouseEventKind::ScrollLeft => h_scroll_delta -= 4,
+                                        MouseEventKind::ScrollRight => {
+                                            h_scroll_delta += SCROLL_STEP_COLUMNS
+                                        }
+                                        MouseEventKind::ScrollLeft => {
+                                            h_scroll_delta -= SCROLL_STEP_COLUMNS
+                                        }
                                         _ => {
                                             pending_events.push_back(next_event);
                                             break;

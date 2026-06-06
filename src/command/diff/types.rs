@@ -1,5 +1,13 @@
 use super::context::ContextConfig;
 
+/// Lines scrolled per vertical mouse-wheel tick. Wheel bursts are coalesced in
+/// the event loop, so N physical ticks scroll N * this value in one redraw.
+pub(crate) const SCROLL_STEP_LINES: i32 = 1;
+
+/// Columns scrolled per horizontal mouse-wheel tick (kept above the vertical
+/// step since reading long lines a column at a time is sluggish).
+pub(crate) const SCROLL_STEP_COLUMNS: i32 = 2;
+
 pub fn expand_tabs(s: &str, tab_width: usize) -> String {
     if tab_width == 0 {
         return s.replace('\t', "");
