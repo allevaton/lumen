@@ -92,6 +92,49 @@ fn ensure_sidebar_visible(state: &mut AppState, visible_height: usize) {
     }
 }
 
+/// Advance the sidebar selection to the next File row (skipping directory rows)
+/// and load its diff. No-op if there is no following file.
+fn select_next_file(state: &mut AppState, visible_height: usize) {
+    if state.file_diffs.is_empty() {
+        return;
+    }
+    let mut next = state.sidebar_selected + 1;
+    while next < state.sidebar_visible_len() {
+        if let Some(SidebarItem::File { file_index, .. }) =
+            state.sidebar_item_at_visible(next).cloned()
+        {
+            state.sidebar_selected = next;
+            state.select_file(file_index);
+            ensure_sidebar_visible(state, visible_height);
+            break;
+        }
+        next += 1;
+    }
+}
+
+/// Move the sidebar selection to the previous File row (skipping directory rows)
+/// and load its diff. No-op if there is no preceding file.
+fn select_prev_file(state: &mut AppState, visible_height: usize) {
+    if state.file_diffs.is_empty() || state.sidebar_selected == 0 {
+        return;
+    }
+    let mut prev = state.sidebar_selected - 1;
+    loop {
+        if let Some(SidebarItem::File { file_index, .. }) =
+            state.sidebar_item_at_visible(prev).cloned()
+        {
+            state.sidebar_selected = prev;
+            state.select_file(file_index);
+            ensure_sidebar_visible(state, visible_height);
+            break;
+        }
+        if prev == 0 {
+            break;
+        }
+        prev -= 1;
+    }
+}
+
 /// Compute the largest horizontal scroll offset that still keeps content
 /// in view for the current file. Walks `side_by_side` for the longest line
 /// on each side and compares against the panel widths from `PanelLayout`.
@@ -1296,43 +1339,42 @@ fn run_app_internal(
                                 state.focused_panel = FocusedPanel::DiffView;
                             }
                         }
+                        // ctrl+j/k: focus-independent file switch (alias for j/k in the
+                        // sidebar and J/K in the diff view).
                         KeyCode::Char('j') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                            if !state.file_diffs.is_empty() {
-                                let mut next = state.sidebar_selected + 1;
-                                while next < state.sidebar_visible_len() {
-                                    if let Some(SidebarItem::File { file_index, .. }) =
-                                        state.sidebar_item_at_visible(next).cloned()
-                                    {
-                                        state.sidebar_selected = next;
-                                        state.select_file(file_index);
-                                        let visible_height =
-                                            terminal.size()?.height.saturating_sub(5) as usize;
-                                        ensure_sidebar_visible(&mut state, visible_height);
-                                        break;
-                                    }
-                                    next += 1;
-                                }
-                            }
+                            let visible_height = terminal.size()?.height.saturating_sub(5) as usize;
+                            select_next_file(&mut state, visible_height);
                         }
                         KeyCode::Char('k') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                            if !state.file_diffs.is_empty() && state.sidebar_selected > 0 {
-                                let mut prev = state.sidebar_selected - 1;
-                                loop {
-                                    if let Some(SidebarItem::File { file_index, .. }) =
-                                        state.sidebar_item_at_visible(prev).cloned()
-                                    {
-                                        state.sidebar_selected = prev;
-                                        state.select_file(file_index);
-                                        let visible_height =
-                                            terminal.size()?.height.saturating_sub(5) as usize;
-                                        ensure_sidebar_visible(&mut state, visible_height);
-                                        break;
-                                    }
-                                    if prev == 0 {
-                                        break;
-                                    }
-                                    prev -= 1;
-                                }
+                            let visible_height = terminal.size()?.height.saturating_sub(5) as usize;
+                            select_prev_file(&mut state, visible_height);
+                        }
+                        // Shift+J/K. In the sidebar, scroll the diff preview while the
+                        // cursor stays parked; in the diff view, switch files. The Char('j')
+                        // + SHIFT arm catches terminals (kitty protocol) that report shifted
+                        // keys that way rather than as Char('J').
+                        KeyCode::Char('J') | KeyCode::Char('j')
+                            if matches!(key.code, KeyCode::Char('J'))
+                                || key.modifiers.contains(KeyModifiers::SHIFT) =>
+                        {
+                            if state.focused_panel == FocusedPanel::Sidebar {
+                                state.scroll = (state.scroll + 4).min(max_scroll as u16);
+                            } else {
+                                let visible_height =
+                                    terminal.size()?.height.saturating_sub(5) as usize;
+                                select_next_file(&mut state, visible_height);
+                            }
+                        }
+                        KeyCode::Char('K') | KeyCode::Char('k')
+                            if matches!(key.code, KeyCode::Char('K'))
+                                || key.modifiers.contains(KeyModifiers::SHIFT) =>
+                        {
+                            if state.focused_panel == FocusedPanel::Sidebar {
+                                state.scroll = state.scroll.saturating_sub(4);
+                            } else {
+                                let visible_height =
+                                    terminal.size()?.height.saturating_sub(5) as usize;
+                                select_prev_file(&mut state, visible_height);
                             }
                         }
                         // Stacked mode: navigate to next commit
@@ -1450,6 +1492,13 @@ fn run_app_internal(
                                 let visible_height =
                                     terminal.size()?.height.saturating_sub(5) as usize;
                                 ensure_sidebar_visible(&mut state, visible_height);
+                                // Live-preview: load the diff when the cursor lands on a file.
+                                if let Some(SidebarItem::File { file_index, .. }) = state
+                                    .sidebar_item_at_visible(state.sidebar_selected)
+                                    .cloned()
+                                {
+                                    state.select_file(file_index);
+                                }
                             } else {
                                 state.scroll = (state.scroll + 1).min(max_scroll as u16);
                             }
@@ -1463,6 +1512,13 @@ fn run_app_internal(
                                 let visible_height =
                                     terminal.size()?.height.saturating_sub(5) as usize;
                                 ensure_sidebar_visible(&mut state, visible_height);
+                                // Live-preview: load the diff when the cursor lands on a file.
+                                if let Some(SidebarItem::File { file_index, .. }) = state
+                                    .sidebar_item_at_visible(state.sidebar_selected)
+                                    .cloned()
+                                {
+                                    state.select_file(file_index);
+                                }
                             } else {
                                 state.scroll = state.scroll.saturating_sub(1);
                             }
@@ -2056,7 +2112,7 @@ fn run_app_internal(
                                             },
                                             KeyBind {
                                                 key: "ctrl+j / ctrl+k",
-                                                description: "Next / previous file",
+                                                description: "Next / previous file (any panel)",
                                             },
                                             KeyBind {
                                                 key: "d / u (or ctrl+d / ctrl+u)",
@@ -2097,7 +2153,11 @@ fn run_app_internal(
                                         bindings: vec![
                                             KeyBind {
                                                 key: "j/k or up/down",
-                                                description: "Navigate files",
+                                                description: "Navigate files (loads diff)",
+                                            },
+                                            KeyBind {
+                                                key: "J / K",
+                                                description: "Scroll diff preview down / up",
                                             },
                                             KeyBind {
                                                 key: "h/l or left/right",
@@ -2120,6 +2180,10 @@ fn run_app_internal(
                                             KeyBind {
                                                 key: "j/k or up/down",
                                                 description: "Scroll vertically",
+                                            },
+                                            KeyBind {
+                                                key: "J / K",
+                                                description: "Next / previous file",
                                             },
                                             KeyBind {
                                                 key: "h/l or left/right",
