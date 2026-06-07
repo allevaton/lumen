@@ -319,22 +319,21 @@ mod tests {
 
     fn get_tree_cache(filename: &str, source: &str) -> HashMap<String, Tree> {
         let mut tree_cache = HashMap::default();
-        
+
         let Some(lang_ctx) = get_language_context(&filename) else {
             return tree_cache;
         };
-        
+
         let mut parser = Parser::new();
         if parser.set_language(&lang_ctx.language).is_err() {
             return tree_cache;
         }
-        
+
         if let Some(tree) = parser.parse(source, None) {
             tree_cache.insert(filename.to_string(), tree);
         }
 
         return tree_cache;
-
     }
 
     #[test]
@@ -343,7 +342,7 @@ mod tests {
         let filename = "test.rs";
         let source = "";
         let tree_cache = get_tree_cache(filename, source);
-        
+
         let result = compute_context_lines(source, filename, &tree_cache, 5, &config, 4);
         assert!(result.is_empty());
     }
@@ -354,7 +353,7 @@ mod tests {
         let filename = "test.rs";
         let source = "fn main() {\n    println!(\"hello\");\n}";
         let tree_cache = get_tree_cache(filename, source);
-        
+
         let result = compute_context_lines(source, filename, &tree_cache, 0, &config, 4);
         assert!(result.is_empty());
     }
@@ -371,7 +370,6 @@ mod tests {
 }"#;
         let tree_cache = get_tree_cache(filename, source);
 
-        
         let result = compute_context_lines(source, filename, &tree_cache, 3, &config, 4);
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].content, "fn main() {");
@@ -390,7 +388,7 @@ mod tests {
     }
 }"#;
         let tree_cache = get_tree_cache(filename, source);
-        
+
         let result = compute_context_lines(source, filename, &tree_cache, 3, &config, 4);
         // Should show impl, fn, and if
         assert!(result.len() >= 2);
@@ -403,7 +401,7 @@ mod tests {
         let filename = "test.xyz";
         let source = "some content\nmore content\neven more";
         let tree_cache = get_tree_cache(filename, source);
-        
+
         let result = compute_context_lines(source, filename, &tree_cache, 2, &config, 4);
         assert!(result.is_empty());
     }
@@ -417,7 +415,7 @@ mod tests {
         let filename = "test.rs";
         let source = "fn main() {\n    let x = 1;\n}";
         let tree_cache = get_tree_cache(filename, source);
-        
+
         let result = compute_context_lines(source, filename, &tree_cache, 1, &config, 4);
         assert!(result.is_empty());
     }

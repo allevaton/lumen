@@ -49,7 +49,10 @@ impl LumenProvider {
     ) -> Result<Self, LumenError> {
         let (backend, provider_name) = match provider_type {
             // Custom endpoint providers (OpenCode Zen, OpenRouter, Vercel) - use ServiceTargetResolver
-            ProviderType::OpencodeZen | ProviderType::Openrouter | ProviderType::Vercel | ProviderType::Groq => {
+            ProviderType::OpencodeZen
+            | ProviderType::Openrouter
+            | ProviderType::Vercel
+            | ProviderType::Groq => {
                 let defaults = ProviderInfo::for_provider(provider_type);
                 let config = match provider_type {
                     ProviderType::OpencodeZen => CustomProviderConfig {

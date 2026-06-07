@@ -237,17 +237,38 @@ mod tests {
         assert!(extensions.contains(&"go"), "Go config should be loaded");
         assert!(extensions.contains(&"json"), "JSON config should be loaded");
         assert!(extensions.contains(&"ex"), "Elixir config should be loaded");
-        assert!(extensions.contains(&"exs"), "Elixir script config should be loaded");
+        assert!(
+            extensions.contains(&"exs"),
+            "Elixir script config should be loaded"
+        );
         assert!(extensions.contains(&"java"), "Java config should be loaded");
         assert!(extensions.contains(&"zig"), "Zig config should be loaded");
         assert!(extensions.contains(&"c"), "C config should be loaded");
-        assert!(extensions.contains(&"h"), "C header config should be loaded");
+        assert!(
+            extensions.contains(&"h"),
+            "C header config should be loaded"
+        );
         assert!(extensions.contains(&"cpp"), "C++ config should be loaded");
-        assert!(extensions.contains(&"cc"), "C++ .cc config should be loaded");
-        assert!(extensions.contains(&"cxx"), "C++ .cxx config should be loaded");
-        assert!(extensions.contains(&"hpp"), "C++ .hpp config should be loaded");
-        assert!(extensions.contains(&"hh"), "C++ .hh config should be loaded");
-        assert!(extensions.contains(&"hxx"), "C++ .hxx config should be loaded");
+        assert!(
+            extensions.contains(&"cc"),
+            "C++ .cc config should be loaded"
+        );
+        assert!(
+            extensions.contains(&"cxx"),
+            "C++ .cxx config should be loaded"
+        );
+        assert!(
+            extensions.contains(&"hpp"),
+            "C++ .hpp config should be loaded"
+        );
+        assert!(
+            extensions.contains(&"hh"),
+            "C++ .hh config should be loaded"
+        );
+        assert!(
+            extensions.contains(&"hxx"),
+            "C++ .hxx config should be loaded"
+        );
     }
 
     #[test]
@@ -307,7 +328,10 @@ function hello(): string {
 end
 "#;
         let result = highlight_code(code, "test.ex");
-        assert!(!result.is_empty(), "Elixir highlighting should produce output");
+        assert!(
+            !result.is_empty(),
+            "Elixir highlighting should produce output"
+        );
         let has_highlights = result.iter().any(|(_, h)| h.is_some());
         assert!(has_highlights, "Elixir code should have syntax highlights");
     }
@@ -323,7 +347,10 @@ public class Hello {
 }
 "#;
         let result = highlight_code(code, "test.java");
-        assert!(!result.is_empty(), "Java highlighting should produce output");
+        assert!(
+            !result.is_empty(),
+            "Java highlighting should produce output"
+        );
         let has_highlights = result.iter().any(|(_, h)| h.is_some());
         assert!(has_highlights, "Java code should have syntax highlights");
     }
@@ -338,10 +365,7 @@ pub fn main() !void {
 }
 "#;
         let result = highlight_code(code, "test.zig");
-        assert!(
-            !result.is_empty(),
-            "Zig highlighting should produce output"
-        );
+        assert!(!result.is_empty(), "Zig highlighting should produce output");
         let has_highlights = result.iter().any(|(_, h)| h.is_some());
         assert!(has_highlights, "Zig code should have syntax highlights");
     }
@@ -404,10 +428,7 @@ int main(void) {
 }
 "#;
         let result = highlight_code(code, "test.c");
-        assert!(
-            !result.is_empty(),
-            "C highlighting should produce output"
-        );
+        assert!(!result.is_empty(), "C highlighting should produce output");
         let has_highlights = result.iter().any(|(_, h)| h.is_some());
         assert!(has_highlights, "C code should have syntax highlights");
     }
@@ -429,10 +450,7 @@ int main() {
 }
 "#;
         let result = highlight_code(code, "test.cpp");
-        assert!(
-            !result.is_empty(),
-            "C++ highlighting should produce output"
-        );
+        assert!(!result.is_empty(), "C++ highlighting should produce output");
         let has_highlights = result.iter().any(|(_, h)| h.is_some());
         assert!(has_highlights, "C++ code should have syntax highlights");
 
