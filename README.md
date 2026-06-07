@@ -147,7 +147,7 @@ LUMEN_THEME=catppuccin-mocha lumen diff
 | Theme | Value |
 |-------|-------|
 | Default (auto-detect) | `dark`, `light` |
-| Catppuccin | `catppuccin-mocha`, `catppuccin-latte` |
+| Catppuccin | `catppuccin-mocha`, `catppuccin-macchiato`, `catppuccin-latte` |
 | Dracula | `dracula` |
 | Nord | `nord` |
 | One Dark | `one-dark` |

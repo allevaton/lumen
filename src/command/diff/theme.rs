@@ -15,6 +15,7 @@ pub enum ThemePreset {
     DefaultDark,
     DefaultLight,
     CatppuccinMocha,
+    CatppuccinMacchiato,
     CatppuccinLatte,
     Dracula,
     Nord,
@@ -35,6 +36,7 @@ impl FromStr for ThemePreset {
             "default-dark" | "dark" => Ok(Self::DefaultDark),
             "default-light" | "light" => Ok(Self::DefaultLight),
             "catppuccin-mocha" | "mocha" => Ok(Self::CatppuccinMocha),
+            "catppuccin-macchiato" | "macchiato" => Ok(Self::CatppuccinMacchiato),
             "catppuccin-latte" | "latte" => Ok(Self::CatppuccinLatte),
             "dracula" => Ok(Self::Dracula),
             "nord" => Ok(Self::Nord),
@@ -46,7 +48,7 @@ impl FromStr for ThemePreset {
             "flexoki-dark" => Ok(Self::FlexokiDark),
             "flexoki-light" => Ok(Self::FlexokiLight),
             _ => Err(format!(
-                "Unknown theme '{}'. Valid: default-dark, default-light, catppuccin-mocha, catppuccin-latte, dracula, nord, gruvbox-dark, gruvbox-light, one-dark, solarized-dark, solarized-light, flexoki-dark, flexoki-light",
+                "Unknown theme '{}'. Valid: default-dark, default-light, catppuccin-mocha, catppuccin-macchiato, catppuccin-latte, dracula, nord, gruvbox-dark, gruvbox-light, one-dark, solarized-dark, solarized-light, flexoki-dark, flexoki-light",
                 s
             )),
         }
@@ -269,6 +271,7 @@ impl Theme {
             ThemePreset::DefaultDark => Self::dark(),
             ThemePreset::DefaultLight => Self::light(),
             ThemePreset::CatppuccinMocha => Self::catppuccin_mocha(),
+            ThemePreset::CatppuccinMacchiato => Self::catppuccin_macchiato(),
             ThemePreset::CatppuccinLatte => Self::catppuccin_latte(),
             ThemePreset::Dracula => Self::dracula(),
             ThemePreset::Nord => Self::nord(),
@@ -339,6 +342,67 @@ impl Theme {
                 search_match_fg: Color::Rgb(30, 30, 46),
                 search_current_bg: Color::Rgb(250, 179, 135),
                 search_current_fg: Color::Rgb(30, 30, 46),
+            },
+        }
+    }
+
+    pub fn catppuccin_macchiato() -> Self {
+        Self {
+            mode: ThemeMode::Dark,
+            syntax: SyntaxColors {
+                comment: Color::Rgb(110, 115, 141),          // overlay0
+                keyword: Color::Rgb(198, 160, 246),          // mauve
+                string: Color::Rgb(166, 218, 149),           // green
+                number: Color::Rgb(245, 169, 127),           // peach
+                function: Color::Rgb(138, 173, 244),         // blue
+                function_macro: Color::Rgb(139, 213, 202),   // teal
+                r#type: Color::Rgb(238, 212, 159),           // yellow
+                variable_builtin: Color::Rgb(237, 135, 150), // red
+                variable_member: Color::Rgb(125, 196, 228),  // sapphire
+                module: Color::Rgb(245, 169, 127),           // peach
+                operator: Color::Rgb(145, 215, 227),         // sky
+                tag: Color::Rgb(166, 218, 149),              // green
+                attribute: Color::Rgb(138, 173, 244),        // blue
+                label: Color::Rgb(245, 189, 230),            // pink
+                punctuation: Color::Rgb(165, 173, 203),      // subtext0
+                default_text: Color::Rgb(202, 211, 245),     // text
+            },
+            diff: DiffColors {
+                added_bg: Color::Rgb(43, 60, 53),
+                added_gutter_bg: Color::Rgb(50, 82, 60),
+                added_gutter_fg: Color::Rgb(166, 218, 149), // green
+                deleted_bg: Color::Rgb(60, 42, 51),
+                deleted_gutter_bg: Color::Rgb(82, 50, 60),
+                deleted_gutter_fg: Color::Rgb(237, 135, 150), // red
+                context_bg: Color::Rgb(42, 46, 66),           // base, lifted toward surface0
+                empty_placeholder_fg: Color::Rgb(73, 77, 100), // surface1
+                added_word_bg: Color::Rgb(58, 100, 70),
+                deleted_word_bg: Color::Rgb(112, 58, 70),
+            },
+            ui: UiColors {
+                border_focused: Color::Rgb(138, 173, 244),   // blue
+                border_unfocused: Color::Rgb(73, 77, 100),   // surface1
+                text_primary: Color::Rgb(202, 211, 245),     // text
+                text_secondary: Color::Rgb(165, 173, 203),   // subtext0
+                text_muted: Color::Rgb(110, 115, 141),       // overlay0
+                line_number: Color::Rgb(91, 96, 120),        // surface2
+                bg: Color::Rgb(36, 39, 58),                  // base
+                footer_branch_bg: Color::Rgb(54, 58, 79),    // surface0
+                footer_branch_fg: Color::Rgb(138, 173, 244), // blue
+                status_added: Color::Rgb(166, 218, 149),     // green
+                status_modified: Color::Rgb(238, 212, 159),  // yellow
+                status_deleted: Color::Rgb(237, 135, 150),   // red
+                stats_added: Color::Rgb(166, 218, 149),
+                stats_removed: Color::Rgb(237, 135, 150),
+                selection_bg: Color::Rgb(138, 173, 244),
+                selection_fg: Color::Rgb(36, 39, 58),
+                highlight: Color::Rgb(238, 212, 159),
+                viewed: Color::Rgb(166, 218, 149),
+                watching: Color::Rgb(238, 212, 159),
+                search_match_bg: Color::Rgb(238, 212, 159),
+                search_match_fg: Color::Rgb(36, 39, 58),
+                search_current_bg: Color::Rgb(245, 169, 127),
+                search_current_fg: Color::Rgb(36, 39, 58),
             },
         }
     }
