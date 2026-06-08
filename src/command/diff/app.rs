@@ -1019,13 +1019,17 @@ fn run_app_internal(
                                 if clicked_row < state.sidebar_visible_len() {
                                     let item = state.sidebar_item_at_visible(clicked_row).cloned();
                                     if let Some(item) = item {
+                                        let was_selected = clicked_row == state.sidebar_selected;
                                         state.sidebar_selected = clicked_row;
                                         match item {
                                             SidebarItem::File { file_index, .. } => {
                                                 state.focused_panel = FocusedPanel::DiffView;
                                                 state.select_file(file_index);
                                             }
-                                            SidebarItem::Directory { path, .. } => {
+                                            // A folder click only selects; toggling
+                                            // expand/collapse requires clicking the
+                                            // already-selected folder.
+                                            SidebarItem::Directory { path, .. } if was_selected => {
                                                 state.focused_panel = FocusedPanel::Sidebar;
                                                 state.toggle_directory(&path);
                                                 let visible_height =
@@ -1040,6 +1044,9 @@ fn run_app_internal(
                                                         .saturating_sub(visible_height)
                                                         + 1;
                                                 }
+                                            }
+                                            SidebarItem::Directory { .. } => {
+                                                state.focused_panel = FocusedPanel::Sidebar;
                                             }
                                         }
                                     }
