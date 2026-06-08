@@ -269,6 +269,11 @@ mod tests {
             extensions.contains(&"hxx"),
             "C++ .hxx config should be loaded"
         );
+        assert!(extensions.contains(&"kt"), "Kotlin config should be loaded");
+        assert!(
+            extensions.contains(&"kts"),
+            "Kotlin script config should be loaded"
+        );
     }
 
     #[test]
@@ -470,6 +475,24 @@ int main() {
             has_namespace_keyword,
             "C++ 'namespace' should be highlighted as keyword"
         );
+    }
+
+    #[test]
+    fn test_kotlin_highlighting() {
+        let code = r#"package com.example
+
+fun greet(name: String): String {
+    val message = "Hello, $name!"
+    return message
+}
+"#;
+        let result = highlight_code(code, "test.kt");
+        assert!(
+            !result.is_empty(),
+            "Kotlin highlighting should produce output"
+        );
+        let has_highlights = result.iter().any(|(_, h)| h.is_some());
+        assert!(has_highlights, "Kotlin code should have syntax highlights");
     }
 
     #[test]

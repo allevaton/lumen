@@ -297,5 +297,21 @@ pub static CONFIGS: Lazy<Vec<(&'static str, LanguageConfig)>> = Lazy::new(|| {
         &mut configs,
     );
 
+    load_config(
+        tree_sitter_kotlin_ng::LANGUAGE.into(),
+        "kotlin",
+        KOTLIN_HIGHLIGHTS,
+        "kt",
+        &mut configs,
+    );
+
+    load_config(
+        tree_sitter_kotlin_ng::LANGUAGE.into(),
+        "kotlin",
+        KOTLIN_HIGHLIGHTS,
+        "kts",
+        &mut configs,
+    );
+
     configs
 });

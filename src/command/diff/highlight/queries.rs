@@ -1296,3 +1296,37 @@ pub const CPP_HIGHLIGHTS: &str = r##"
 ";" @punctuation.delimiter
 ":" @punctuation.delimiter
 "##;
+
+pub const KOTLIN_HIGHLIGHTS: &str = r#"
+(line_comment) @comment
+(block_comment) @comment
+
+(string_literal) @string
+(multiline_string_literal) @string
+(character_literal) @string
+
+(number_literal) @number
+(float_literal) @number
+
+[
+  "fun" "val" "var" "class" "object" "interface" "companion" "data" "sealed" "enum"
+  "annotation" "typealias" "import" "package" "constructor" "init" "get" "set"
+  "if" "else" "when" "for" "while" "do" "return" "throw" "try" "catch" "finally"
+  "as" "is" "in" "by" "where"
+  "public" "private" "protected" "internal"
+  "abstract" "final" "open" "override" "const" "lateinit"
+  "suspend" "inline" "noinline" "crossinline" "infix" "operator" "tailrec" "vararg"
+  "this" "super"
+] @keyword
+
+(function_declaration name: (identifier) @function)
+(class_declaration name: (identifier) @type)
+(object_declaration name: (identifier) @type)
+(user_type (identifier) @type)
+
+(call_expression (identifier) @function)
+(call_expression (navigation_expression (identifier) @function.method))
+
+["(" ")" "[" "]" "{" "}"] @punctuation.bracket
+["." "," ";" ":"] @punctuation.delimiter
+"#;
