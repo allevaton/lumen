@@ -884,6 +884,52 @@ impl AppState {
         self.focused_hunk = if hunks.is_empty() { None } else { Some(0) };
     }
 
+    /// Advance `focused_hunk` to the next hunk, scrolling it into view. Backs
+    /// both `}` and the no-search `n` binding.
+    pub fn focus_next_hunk(&mut self, visible_height: usize, max_scroll: usize) {
+        if self.file_diffs.is_empty() {
+            return;
+        }
+        self.clear_selection();
+        let hunks = self.get_hunks().to_vec();
+        if hunks.is_empty() {
+            return;
+        }
+        let next_hunk = match self.focused_hunk {
+            None => hunks
+                .iter()
+                .position(|&h| h > self.scroll as usize + 5)
+                .unwrap_or(0),
+            Some(current) => (current + 1).min(hunks.len() - 1),
+        };
+        self.focused_hunk = Some(next_hunk);
+        self.scroll =
+            adjust_scroll_for_hunk(hunks[next_hunk], self.scroll, visible_height, max_scroll);
+    }
+
+    /// Move `focused_hunk` to the previous hunk, scrolling it into view. Backs
+    /// both `{` and the no-search `N` binding.
+    pub fn focus_prev_hunk(&mut self, visible_height: usize, max_scroll: usize) {
+        if self.file_diffs.is_empty() {
+            return;
+        }
+        self.clear_selection();
+        let hunks = self.get_hunks().to_vec();
+        if hunks.is_empty() {
+            return;
+        }
+        let prev_hunk = match self.focused_hunk {
+            None => hunks
+                .iter()
+                .rposition(|&h| (h as u16) < self.scroll.saturating_sub(5))
+                .unwrap_or(hunks.len() - 1),
+            Some(current) => current.saturating_sub(1),
+        };
+        self.focused_hunk = Some(prev_hunk);
+        self.scroll =
+            adjust_scroll_for_hunk(hunks[prev_hunk], self.scroll, visible_height, max_scroll);
+    }
+
     /// Get annotation by id
     pub fn get_annotation_by_id(&self, id: u64) -> Option<&Annotation> {
         self.annotations.iter().find(|a| a.id == id)
@@ -1110,5 +1156,65 @@ mod tests {
 
         assert_eq!(state.current_file, 0);
         assert!(state.file_diffs.is_empty());
+    }
+
+    fn make_multi_hunk_diff() -> FileDiff {
+        // Three change regions separated by equal lines => three hunks.
+        FileDiff {
+            filename: "multi.rs".to_string(),
+            old_content: "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\n".to_string(),
+            new_content: "a\nX\nc\nd\ne\nY\ng\nh\ni\nZ\nk\n".to_string(),
+            status: FileStatus::Modified,
+            is_binary: false,
+        }
+    }
+
+    #[test]
+    fn test_focus_next_hunk_advances_to_following_hunk() {
+        let mut state = AppState::new(vec![make_multi_hunk_diff()], None);
+        assert!(
+            state.get_hunks().len() >= 2,
+            "fixture must produce multiple hunks"
+        );
+        state.focused_hunk = Some(0);
+
+        state.focus_next_hunk(40, 1000);
+
+        assert_eq!(state.focused_hunk, Some(1));
+    }
+
+    #[test]
+    fn test_focus_next_hunk_clamps_at_last_hunk() {
+        let mut state = AppState::new(vec![make_multi_hunk_diff()], None);
+        let last = state.get_hunks().len() - 1;
+        state.focused_hunk = Some(last);
+
+        state.focus_next_hunk(40, 1000);
+
+        assert_eq!(state.focused_hunk, Some(last));
+    }
+
+    #[test]
+    fn test_focus_prev_hunk_moves_to_preceding_hunk() {
+        let mut state = AppState::new(vec![make_multi_hunk_diff()], None);
+        assert!(
+            state.get_hunks().len() >= 3,
+            "fixture must produce >= 3 hunks"
+        );
+        state.focused_hunk = Some(2);
+
+        state.focus_prev_hunk(40, 1000);
+
+        assert_eq!(state.focused_hunk, Some(1));
+    }
+
+    #[test]
+    fn test_focus_prev_hunk_clamps_at_first_hunk() {
+        let mut state = AppState::new(vec![make_multi_hunk_diff()], None);
+        state.focused_hunk = Some(0);
+
+        state.focus_prev_hunk(40, 1000);
+
+        assert_eq!(state.focused_hunk, Some(0));
     }
 }

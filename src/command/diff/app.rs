@@ -1749,52 +1749,10 @@ fn run_app_internal(
                             state.scroll = state.scroll.saturating_sub(20);
                         }
                         KeyCode::Char('}') => {
-                            if !state.file_diffs.is_empty() {
-                                state.clear_selection(); // Clear selection on hunk navigation
-                                let hunks = state.get_hunks().to_vec();
-                                let current_hunk = state.focused_hunk.unwrap_or(0);
-                                let next_hunk = if state.focused_hunk.is_none() {
-                                    hunks
-                                        .iter()
-                                        .position(|&h| h > state.scroll as usize + 5)
-                                        .unwrap_or(0)
-                                } else {
-                                    (current_hunk + 1).min(hunks.len().saturating_sub(1))
-                                };
-                                if !hunks.is_empty() {
-                                    state.focused_hunk = Some(next_hunk);
-                                    state.scroll = adjust_scroll_for_hunk(
-                                        hunks[next_hunk],
-                                        state.scroll,
-                                        visible_height,
-                                        max_scroll,
-                                    );
-                                }
-                            }
+                            state.focus_next_hunk(visible_height, max_scroll);
                         }
                         KeyCode::Char('{') => {
-                            if !state.file_diffs.is_empty() {
-                                state.clear_selection(); // Clear selection on hunk navigation
-                                let hunks = state.get_hunks().to_vec();
-                                let current_hunk = state.focused_hunk.unwrap_or(hunks.len());
-                                let prev_hunk = if state.focused_hunk.is_none() {
-                                    hunks
-                                        .iter()
-                                        .rposition(|&h| (h as u16) < state.scroll.saturating_sub(5))
-                                        .unwrap_or(hunks.len().saturating_sub(1))
-                                } else {
-                                    current_hunk.saturating_sub(1)
-                                };
-                                if !hunks.is_empty() {
-                                    state.focused_hunk = Some(prev_hunk);
-                                    state.scroll = adjust_scroll_for_hunk(
-                                        hunks[prev_hunk],
-                                        state.scroll,
-                                        visible_height,
-                                        max_scroll,
-                                    );
-                                }
-                            }
+                            state.focus_prev_hunk(visible_height, max_scroll);
                         }
                         KeyCode::Char('m') => {
                             if state.focused_panel == FocusedPanel::DiffView
@@ -2098,6 +2056,13 @@ fn run_app_internal(
                                 );
                             }
                         }
+                        // With no live search query, n/N back up }/{ for hunk navigation.
+                        KeyCode::Char('n') => {
+                            state.focus_next_hunk(visible_height, max_scroll);
+                        }
+                        KeyCode::Char('N') => {
+                            state.focus_prev_hunk(visible_height, max_scroll);
+                        }
                         KeyCode::Char('?') => {
                             active_modal = Some(Modal::keybindings(
                                 "Keybindings",
@@ -2205,7 +2170,7 @@ fn run_app_internal(
                                                 description: "Scroll to top / bottom",
                                             },
                                             KeyBind {
-                                                key: "{ / }",
+                                                key: "{ / } or N / n",
                                                 description: "Focus prev / next hunk",
                                             },
                                             KeyBind {
@@ -2248,11 +2213,13 @@ fn run_app_internal(
                                             },
                                             KeyBind {
                                                 key: "n or down",
-                                                description: "Next match (in-file)",
+                                                description:
+                                                    "Next match (in-file, when search active)",
                                             },
                                             KeyBind {
                                                 key: "N or up",
-                                                description: "Previous match (in-file)",
+                                                description:
+                                                    "Previous match (in-file, when search active)",
                                             },
                                             KeyBind {
                                                 key: "ctrl+c or esc",
